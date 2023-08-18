@@ -1,0 +1,28 @@
+name: send_crypto_demo
+description: Connect with Metamask Demo Web App
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  bloc: ^8.1.2
+  equatable: ^2.0.5
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^8.1.3
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.18.0
+  send_crypto_ui:
+    path: ./packages/send_crypto_ui
+  wallet_connect_repository:
+    path: ./packages/wallet_connect_repository
+
+dev_dependencies:
+  very_good_analysis: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
