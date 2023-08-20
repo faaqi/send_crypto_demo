@@ -41,11 +41,12 @@ class SCTextFormField extends TextFormField {
     TextStyle? textStyle,
     TextStyle? hintStyle,
     EdgeInsets? contentPadding,
+    final Color themeColor = SCColors.black,
     super.onTap,
   }) : super(
           maxLength: maxlength,
           style: textStyle ?? SCTextStyle.bodyText1,
-          cursorColor: SCColors.black,
+          cursorColor: themeColor,
           decoration: decoration ??
               (noOutlineBorder
                   ? InputDecoration(
@@ -76,14 +77,17 @@ class SCTextFormField extends TextFormField {
                       prefixIcon: prefix,
                       errorText: errorText,
                       labelText: label,
+                      labelStyle: textStyle,
                       hintText: hintText,
                       hintStyle: hintStyle,
                       contentPadding: contentPadding,
-                      labelStyle: SCTextStyle.labelSmall,
-                      border: _outlineInputBorder(),
-                      focusedBorder: _outlineInputBorder(),
-                      enabledBorder: _outlineInputBorder(),
-                      disabledBorder: _outlineInputBorder(),
+                      border: _outlineInputBorder(borderColor: themeColor),
+                      focusedBorder:
+                          _outlineInputBorder(borderColor: themeColor),
+                      enabledBorder:
+                          _outlineInputBorder(borderColor: themeColor),
+                      disabledBorder:
+                          _outlineInputBorder(borderColor: themeColor),
                     )),
         );
 
@@ -110,12 +114,14 @@ class SCTextFormField extends TextFormField {
     super.onSaved,
   });
 
-  static OutlineInputBorder _outlineInputBorder() {
-    return const OutlineInputBorder(
+  static OutlineInputBorder _outlineInputBorder({
+    Color? borderColor = SCColors.black,
+  }) {
+    return OutlineInputBorder(
       borderSide: BorderSide(
-        color: SCColors.black,
+        color: borderColor ?? SCColors.black,
       ),
-      borderRadius: BorderRadius.all(
+      borderRadius: const BorderRadius.all(
         Radius.circular(
           SCSpacing.sm,
         ),

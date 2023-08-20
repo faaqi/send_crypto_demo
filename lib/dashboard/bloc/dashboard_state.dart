@@ -16,7 +16,7 @@ enum WalletConnectionStatus {
 enum TransactionStatus {
   generic,
   pending,
-  successful,
+  success,
   failed,
 }
 

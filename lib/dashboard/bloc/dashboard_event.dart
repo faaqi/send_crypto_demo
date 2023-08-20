@@ -46,4 +46,6 @@ class SendTokensRequested extends DashboardEvent {}
 
 class TransactionReceiptFetched extends DashboardEvent {}
 
+class ViewTransactionOnEtherscanRequested extends DashboardEvent {}
+
 class ResetStateRequested extends DashboardEvent {}

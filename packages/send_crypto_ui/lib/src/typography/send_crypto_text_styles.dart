@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:send_crypto_ui/send_crypto_ui.dart';
 
-
 //extension for font weights
 
 abstract class SCTextStyle {
@@ -46,6 +45,20 @@ abstract class SCTextStyle {
   /// Headline 3 Text Style
   static final TextStyle headline3 = _baseTextStyle.copyWith(
     fontSize: 28,
+    fontWeight: SCFontWeight.semiBold,
+    height: 1.28,
+  );
+
+  /// Headline 4 Text Style
+  static final TextStyle headline4 = _baseTextStyle.copyWith(
+    fontSize: 24,
+    fontWeight: SCFontWeight.semiBold,
+    height: 1.28,
+  );
+
+  /// Headline 5 Text Style
+  static final TextStyle headline5 = _baseTextStyle.copyWith(
+    fontSize: 20,
     fontWeight: SCFontWeight.semiBold,
     height: 1.28,
   );
@@ -105,5 +118,4 @@ abstract class SCTextStyle {
     height: 1.45,
     letterSpacing: 0.5,
   );
-
 }

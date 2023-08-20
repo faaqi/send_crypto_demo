@@ -25,8 +25,20 @@ class $AssetsIconsGen {
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
+  /// File path: assets/images/background.png
+  AssetGenImage get background =>
+      const AssetGenImage('assets/images/background.png');
+
   /// File path: assets/images/icon.png
   AssetGenImage get icon => const AssetGenImage('assets/images/icon.png');
+
+  /// File path: assets/images/metamask_fox.png
+  AssetGenImage get metamaskFox =>
+      const AssetGenImage('assets/images/metamask_fox.png');
+
+  /// File path: assets/images/metamast_logo.png
+  AssetGenImage get metamastLogo =>
+      const AssetGenImage('assets/images/metamast_logo.png');
 }
 
 class Assets {

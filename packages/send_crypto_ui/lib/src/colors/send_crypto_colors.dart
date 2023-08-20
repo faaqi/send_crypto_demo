@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 abstract class SCColors {
- /// Black
+  /// Black
   static const Color black = Color(0xFF000000);
 
   /// White
@@ -76,6 +76,9 @@ abstract class SCColors {
   /// The light outline color.
   static const Color outlineLight = Color(0x33000000);
 
+  /// The red primary color and swatch.
+  static const Color orangeAccent = Colors.orangeAccent;
+
   /// The secondary color of application.
   static const MaterialColor secondary = MaterialColor(0xFF963F6E, <int, Color>{
     50: Color(0xFFFFECF3),
@@ -89,7 +92,4 @@ abstract class SCColors {
     800: Color(0xFF5F0F40),
     900: Color(0xFF3D0026),
   });
-
-
-
 }

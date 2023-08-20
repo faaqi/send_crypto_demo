@@ -19,4 +19,8 @@ abstract class WalletConnectRepositoryBase {
   Future<TransactionReceipt?> getTransactionReceipt({
     required TransactionResponse transaction,
   });
+
+  Future<void> launchURL({
+    required String url,
+  });
 }

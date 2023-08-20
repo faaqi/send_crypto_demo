@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:send_crypto_demo/common/extensions/extensions.dart';
 import 'package:wallet_connect_repository/wallet_connect_repository.dart';
 
 part 'dashboard_event.dart';
@@ -19,6 +20,9 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     on<AmountToTransferChanged>(_onAmountToTransferChanged);
     on<SendTokensRequested>(_onSendTokensRequested);
     on<TransactionReceiptFetched>(_onTransactionReceiptFetched);
+    on<ViewTransactionOnEtherscanRequested>(
+      _onViewTransactionOnEtherscanRequested,
+    );
     on<ResetStateRequested>(_onResetStateRequested);
   }
 
@@ -43,9 +47,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
       add(OnChainChangedListener());
       add(OnAccountChangedListener());
-
-      // add(const FetchWalletBalanceRequested(
-      //     walletAddress: '0x455E5AA18469bC6ccEF49594645666C587A3a71B'));
 
       emit(
         state.copyWith(
@@ -232,10 +233,12 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       if (receipt != null) {
         emit(
           state.copyWith(
+            recipientWalletAddress: '',
+            amountToTransfer: '',
             status: DashboardStatus.loaded,
             transactionReceipt: receipt,
             transactionStatus: receipt.status
-                ? TransactionStatus.successful
+                ? TransactionStatus.success
                 : TransactionStatus.failed,
           ),
         );
@@ -263,6 +266,30 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     }
   }
 
+  Future<void> _onViewTransactionOnEtherscanRequested(
+    ViewTransactionOnEtherscanRequested event,
+    Emitter<DashboardState> emit,
+  ) async {
+    try {
+      final chainName = state.chainInfo?.chainName ?? '';
+      final transactionHash = state.transactionResponse?.hash ?? '';
+
+      final url = transactionHash.getEtherscanUrl(
+        chainName: chainName,
+        transactionHash: transactionHash,
+      );
+
+      await _walletConnectRepository.launchURL(url: url);
+    } on Exception catch (e) {
+      emit(
+        state.copyWith(
+          status: DashboardStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
+  }
+
   Future<void> _onResetStateRequested(
     ResetStateRequested event,
     Emitter<DashboardState> emit,
@@ -275,7 +302,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
                 ? state.walletConnectionStatus
                 : WalletConnectionStatus.generic,
         transactionStatus: TransactionStatus.generic,
-        errorMessage: '',
       ),
     );
   }

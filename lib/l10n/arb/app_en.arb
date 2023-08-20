@@ -1,5 +1,24 @@
 {
     "@@locale": "en",
     "connectToMetamask": "Connect to MetaMask",
-    "sendCryptoDemo": "Send Crypto Demo"
+    "sendCryptoDemo": "SendCrypto Demo",
+    "sendCrypto": "Send Crypto",
+    "accountDetails": "Account Details",
+    "connectedNetwork": "Connected Network",
+    "walletAddress": "Wallet Address",
+    "walletBalance": "Wallet Balance",
+    "send": "Send",
+    "publicWalletAddress": "Public Wallet Address",
+    "amount": "Amount (ETH)",
+    "enterValidWalletAddress": "Please enter valid wallet address",
+    "enterValidAmountETH": "Please enter valid Amount in ETH",
+    "transactionDetails": "Transaction Details",
+    "transactionHash": "Transaction Hash",
+    "status": "Status",
+    "blockNumber": "Block Number",
+    "from": "From",
+    "to": "To",
+    "gasUsed": "Gas Used",
+    "done": "Done",
+    "viewOnEthScan": "View on Etherscan"
 }

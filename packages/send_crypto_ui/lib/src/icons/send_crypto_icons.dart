@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:send_crypto_ui/src/generated/assets.gen.dart';
 
 abstract class SCIcon {
-    ///Returns the back icon
+  ///Returns the back icon
   SvgPicture backIcon({double? size, Color? color}) {
     return Assets.icons.backIcon.svg(
       color: color,
@@ -20,5 +20,4 @@ abstract class SCIcon {
       width: size ?? 14,
     );
   }
-
 }

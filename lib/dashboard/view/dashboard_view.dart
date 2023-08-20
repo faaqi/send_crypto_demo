@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:send_crypto_demo/common/common.dart';
 import 'package:send_crypto_demo/dashboard/dashboard.dart';
 import 'package:send_crypto_demo/l10n/l10n.dart';
 import 'package:send_crypto_ui/send_crypto_ui.dart';
@@ -13,9 +14,74 @@ class DashboardView extends StatelessWidget {
     final isLoading = context.select(
       (DashboardBloc bloc) => bloc.state.status == DashboardStatus.loading,
     );
+
     return BlocListener<DashboardBloc, DashboardState>(
       listener: (_, state) {
-        if (state.status == DashboardStatus.error) {
+        if (state.status == DashboardStatus.loaded) {
+          if (state.transactionStatus != TransactionStatus.generic) {
+            /// Close any already opened dialog if any
+            if (_isThereCurrentDialogShowing(context)) {
+              Navigator.pop(context);
+            }
+
+            showDialog<dynamic>(
+              barrierDismissible: false,
+              context: context,
+              builder: (_) {
+                var statusColor = SCColors.black;
+
+                switch (state.transactionStatus) {
+                  case TransactionStatus.pending:
+                    statusColor = SCColors.orangeAccent;
+                  case TransactionStatus.success:
+                    statusColor = Colors.green;
+                  case TransactionStatus.failed:
+                    statusColor = SCColors.red;
+                  case TransactionStatus.generic:
+                    statusColor = SCColors.black;
+                }
+                if (state.transactionReceipt != null) {
+                  final transactionReceipt = state.transactionReceipt!;
+
+                  return BlocProvider<DashboardBloc>.value(
+                    value: context.read<DashboardBloc>(),
+                    child: TransactionReceipt(
+                      localizations: localizations,
+                      transactionHash: transactionReceipt.transactionHash,
+                      status: state.transactionStatus.name,
+                      statusColor: statusColor,
+                      blockNumber: transactionReceipt.blockNumber.toString(),
+                      from: transactionReceipt.from,
+                      to: transactionReceipt.to ?? '',
+                      gasUsed: transactionReceipt.gasUsed.toString(),
+                      showEthScanViewButton: true,
+                    ),
+                  );
+                } else if (state.transactionResponse != null) {
+                  final transactionResponse = state.transactionResponse!;
+
+                  return BlocProvider<DashboardBloc>.value(
+                    value: context.read<DashboardBloc>(),
+                    child: TransactionReceipt(
+                      localizations: localizations,
+                      transactionHash: transactionResponse.hash,
+                      status: state.transactionStatus.name,
+                      statusColor: statusColor,
+                      blockNumber: transactionResponse.blockNumber == null
+                          ? ''
+                          : transactionResponse.blockNumber.toString(),
+                      from: transactionResponse.from,
+                      to: transactionResponse.to ?? '',
+                      gasUsed: transactionResponse.gasLimit.toString(),
+                    ),
+                  );
+                }
+
+                return const SizedBox();
+              },
+            );
+          }
+        } else if (state.status == DashboardStatus.error) {
           if (state.walletConnectionStatus ==
               WalletConnectionStatus.disconnected) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -39,24 +105,19 @@ class DashboardView extends StatelessWidget {
           context.read<DashboardBloc>().add(ResetStateRequested());
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          toolbarHeight: SCSpacing.xxxlg,
-          title: Text(
-            localizations.sendCryptoDemo,
-            style: SCTextStyle.headline3.copyWith(
-              color: SCColors.blue,
-            ),
+      child: SCProgressIndicator(
+        isLoading: isLoading,
+        child: Scaffold(
+          body: _Body(
+            localizations: localizations,
           ),
         ),
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _Body(
-                localizations: localizations,
-              ),
       ),
     );
   }
+
+  bool _isThereCurrentDialogShowing(BuildContext context) =>
+      ModalRoute.of(context)?.isCurrent != true;
 }
 
 class _Body extends StatelessWidget {
@@ -73,174 +134,36 @@ class _Body extends StatelessWidget {
           bloc.state.walletConnectionStatus == WalletConnectionStatus.connected,
     );
 
+    final screenHeight = ScreenMeasurements(context).screenHeight;
+    final screenWidth = ScreenMeasurements(context).screenWidth;
+
     return Column(
       children: [
         if (isWalletConnected) ...[
-          const _SendTransactionWidget(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              UserWalletInfo(
+                screenHeight: screenHeight,
+                screenWidth: screenWidth,
+                localizations: localizations,
+              ),
+              SendTransactionWidget(
+                screenHeight: screenHeight,
+                screenWidth: screenWidth,
+                localizations: localizations,
+              ),
+            ],
+          ),
         ] else
           Center(
-            child: _ConnectWithMetamaskButton(
+            child: ConnectWithMetamaskView(
               localizations: localizations,
+              screenHeight: screenHeight,
+              screenWidth: screenWidth,
             ),
           )
       ],
-    );
-  }
-}
-
-class _SendTransactionWidget extends StatelessWidget {
-  const _SendTransactionWidget();
-
-  @override
-  Widget build(BuildContext context) {
-    final userWalletData = context.select(
-      (DashboardBloc bloc) => bloc.state.userWalletData,
-    );
-    final chainInfo = context.select(
-      (DashboardBloc bloc) => bloc.state.chainInfo,
-    );
-
-    final transactionReceipt = context.select(
-      (DashboardBloc bloc) => bloc.state.transactionReceipt,
-    );
-
-    final transactionResponse = context.select(
-      (DashboardBloc bloc) => bloc.state.transactionResponse,
-    );
-
-    final transactionStatus = context.select(
-      (DashboardBloc bloc) => bloc.state.transactionStatus,
-    );
-
-    final recipientAddress = context.select(
-      (DashboardBloc bloc) => bloc.state.recipientWalletAddress,
-    );
-
-    final amountToTransfer = context.select(
-      (DashboardBloc bloc) => bloc.state.amountToTransfer,
-    );
-    return Column(
-      children: [
-        const Text('Connected with Metamask'),
-        Text(
-          'Chain Info : ${chainInfo?.chainName}',
-        ),
-        Text(
-          'Wallet Address : ${userWalletData?.walletAddress ?? ''}',
-        ),
-        Text(
-          'Wallet Balance : ${userWalletData!.balance.isEmpty ? 0 : userWalletData.balance} ${chainInfo?.currencySymbol}',
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: SCSpacing.lg,
-            horizontal: SCSpacing.xlg,
-          ),
-          margin: EdgeInsets.symmetric(
-            vertical: SCSpacing.xxlg,
-            horizontal: MediaQuery.sizeOf(context).width * 0.25,
-          ),
-          decoration: const BoxDecoration(),
-          child: Column(
-            children: [
-              const SizedBox(
-                height: SCSpacing.xlg,
-              ),
-              const Text('Send Transaction'),
-              const SizedBox(
-                height: SCSpacing.xlg,
-              ),
-              SCTextFormField(
-                initialValue: recipientAddress,
-                label: 'Recipient Ethereum Address',
-                onChanged: (val) {
-                  context.read<DashboardBloc>().add(
-                        RecipientWalletAddressChanged(
-                          recipientWalletAddress: val,
-                        ),
-                      );
-                },
-              ),
-              const SizedBox(
-                height: SCSpacing.xlg,
-              ),
-              SCTextFormField(
-                initialValue: amountToTransfer,
-                label: 'Amount (Ethers)',
-                onChanged: (val) {
-                  context.read<DashboardBloc>().add(
-                        AmountToTransferChanged(
-                          amountToTransfer: val,
-                        ),
-                      );
-                },
-              ),
-              const SizedBox(
-                height: SCSpacing.xlg,
-              ),
-              SCElevatedButton.primary(
-                onPressed:
-                    (amountToTransfer.isEmpty || recipientAddress.isEmpty)
-                        ? null
-                        : () async {
-                            context.read<DashboardBloc>().add(
-                                  SendTokensRequested(),
-                                );
-                          },
-                child: transactionStatus == TransactionStatus.pending
-                    ? const CircularProgressIndicator()
-                    : const Text('Send'),
-              ),
-              const SizedBox(
-                height: SCSpacing.xxxlg,
-              ),
-              if (transactionStatus != TransactionStatus.generic) ...[
-                if (transactionReceipt != null) ...[
-                  Column(
-                    children: [
-                      Text(transactionReceipt.transactionHash),
-                      Text(transactionStatus.name),
-                      Text(transactionReceipt.blockNumber.toString()),
-                      Text(transactionReceipt.from),
-                      Text(transactionReceipt.to ?? ''),
-                      Text(transactionReceipt.gasUsed.toString()),
-                    ],
-                  ),
-                ] else if (transactionResponse != null) ...[
-                  Column(
-                    children: [
-                      Text(transactionResponse.hash),
-                      Text(transactionStatus.name),
-                      Text(transactionResponse.blockNumber.toString()),
-                      Text(transactionResponse.from),
-                      Text(transactionResponse.to ?? ''),
-                      Text(transactionResponse.gasPrice.toString()),
-                    ],
-                  ),
-                ],
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ConnectWithMetamaskButton extends StatelessWidget {
-  const _ConnectWithMetamaskButton({
-    required this.localizations,
-  });
-
-  final AppLocalizations localizations;
-
-  @override
-  Widget build(BuildContext context) {
-    return SCElevatedButton.primary(
-      child: Text(localizations.connectToMetamask),
-      onPressed: () async {
-        context.read<DashboardBloc>().add(ConnectWithMetamaskRequested());
-      },
     );
   }
 }

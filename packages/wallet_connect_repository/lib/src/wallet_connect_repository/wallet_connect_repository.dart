@@ -1,7 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
 import 'dart:async';
+import 'dart:math';
 
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wallet_connect_repository/wallet_connect_repository.dart';
 
 class WalletConnectRepository implements WalletConnectRepositoryBase {
@@ -52,7 +54,7 @@ class WalletConnectRepository implements WalletConnectRepositoryBase {
       try {
         final bigIntBalance = await provider!.getBalance(walletAddress);
         final balance = bigIntBalance / BigInt.from(10).pow(18);
-        return balance.toString();
+        return balance.toStringAsFixed(4);
       } catch (e) {
         return '';
       }
@@ -69,14 +71,27 @@ class WalletConnectRepository implements WalletConnectRepositoryBase {
     try {
       final token = ContractERC20(toAddress, provider!.getSigner());
 
-      final amountInWei = BigInt.from(amount * 1000000000000000000);
+      final amountToTransfer = amount * pow(10, 18);
 
-      // Convert the amount to the token's smallest unit
-      final amountInSmallestUnit = amountInWei * BigInt.from(10).pow(18);
+      final amountinBigInt = BigInt.from(amountToTransfer);
 
-      print(amountInSmallestUnit);
+      final hexValue = '0x${amountinBigInt.toRadixString(16)}';
 
-      final transaction = await token.transfer(toAddress, amountInSmallestUnit);
+      final gasLimit = await token.contract.estimateGas(
+        'transfer',
+        [toAddress, hexValue],
+      );
+
+      final gasPrice = await provider!.getGasPrice();
+
+      final transaction = await token.contract.send(
+        'transfer',
+        [toAddress, hexValue],
+        TransactionOverride(
+          gasPrice: gasPrice,
+          gasLimit: gasLimit,
+        ),
+      );
 
       return transaction;
     } catch (e) {
@@ -93,6 +108,13 @@ class WalletConnectRepository implements WalletConnectRepositoryBase {
       return receipt;
     } on Exception catch (e) {
       throw Exception(e);
+    }
+  }
+
+  @override
+  Future<void> launchURL({required String url}) async {
+    if (!await launchUrl(Uri.parse(url))) {
+      throw Exception('Could not launch $url');
     }
   }
 }

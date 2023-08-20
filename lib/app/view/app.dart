@@ -23,12 +23,6 @@ class App extends StatelessWidget {
       ],
       child: MaterialApp(
         theme: SCTheme().lightTheme,
-        // theme: ThemeData(
-        //   appBarTheme: const AppBarTheme(color: Color(0xFF13B9FF)),
-        //   colorScheme: ColorScheme.fromSwatch(
-        //     accentColor: const Color(0xFF13B9FF),
-        //   ),
-        // ),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         debugShowCheckedModeBanner: false,
